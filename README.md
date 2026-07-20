@@ -2,7 +2,7 @@
 
 A personal, self-contained reference handbook for prompt engineering techniques. This is **not an application** — it is a documentation repository. Each technique lives in its own numbered folder with a consistent structure: theory, an example prompt, its output, best practices, and common mistakes.
 
-> Scaffold status: skeleton only. Each page contains placeholder sections marked with `TODO` comments referencing the handbook checklist.
+> Status: complete. All ten technique pages are written, each with full Theory, Example Prompt, Output, Best Practices, and Common Mistakes sections.
 
 ## Architecture Diagram
 
@@ -87,21 +87,24 @@ Ten techniques, each documented in its own folder with an identical five-section
 
 ## Screenshots
 
-_Coming soon_
+Not applicable — this repository is plain Markdown documentation with no user interface to capture.
 
 ## Demo GIF
 
-_Coming soon_
+Not applicable — there is no runnable application to record.
 
 ## API Documentation
 
-Not applicable — this repository is a handbook, not a service. _Coming soon_ if runnable snippets are added later.
+Not applicable — this repository is a handbook, not a service.
+
+## Continuous Integration
+
+A lightweight GitHub Actions workflow ([`.github/workflows/ci.yml`](./.github/workflows/ci.yml)) runs a structure check on every push and pull request. It verifies that all ten technique pages exist, each contains the five required sections (Theory, Example Prompt, Output, Best Practices, Common Mistakes), and no unfilled `TODO` or placeholder markers remain.
 
 ## Future Improvements
 
-- Fill in each technique page with full theory, example prompts, and outputs.
 - Add optional provider-agnostic runnable snippets per technique, noting the model used.
-- Cross-link related techniques (e.g. chain-of-thought and self-consistency).
+- Expand cross-links between related techniques (e.g. chain-of-thought and self-consistency).
 - Add a glossary and a quick-decision guide for choosing a technique.
 
 ## License
