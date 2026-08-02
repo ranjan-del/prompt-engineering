@@ -10,6 +10,26 @@ Scoring methods fall on a spectrum. **Deterministic checks** are cheapest and mo
 
 Treat evaluation as a permanent test suite, not a one-off. Hold out the examples you grade on from the ones you used to design the prompt, so you measure generalization rather than memorization. Track a few aligned metrics over time, and re-run the suite on every prompt or model change to catch regressions before they ship.
 
+## When to Use It
+
+- **Always, once a prompt is in production.** Any prompt real users depend on needs a regression suite, exactly like any other code path.
+- **Before and after every prompt change.** Without a baseline you cannot tell an improvement from a lateral move.
+- **When changing model or provider.** A prompt tuned on one model is not portable, and the evaluation suite is how you find out what broke.
+- **When choosing between approaches.** Zero-shot versus few-shot is an empirical question, and one anecdote does not answer it.
+- **When you need to justify a decision** to someone else. "Accuracy went from 71 to 88 percent on 200 held-out cases" ends an argument that opinion cannot.
+
+## When Not to Use It
+
+There is no case for shipping a production prompt unmeasured, but the *method*
+should match the stakes:
+
+- **Skip formal evaluation for genuinely throwaway work**: a one-off script, an exploratory question. Building a test set costs more than the task is worth.
+- **Do not use LLM-as-judge where a deterministic check works.** If the answer is a number or a label, compare it. A judge is slower, costs money, and introduces its own error.
+- **Do not use an uncalibrated judge on high-stakes output.** Medical, legal, and safety decisions need human review, not a model grading a model.
+- **Do not evaluate against a test set you also tuned on.** That number is memorization and it will not survive contact with real traffic.
+- **Do not build an elaborate harness before you have a working prompt.** Get something that functions, then measure it.
+- **Do not chase a metric that does not track what users care about.** A rising score on a proxy metric while user complaints rise is a sign the metric is wrong, not the users.
+
 ## Example Prompt
 
 ```text
@@ -38,6 +58,64 @@ emailed link. Let me know if you need anything else!"
 ```
 
 *(Model: representative of a modern instruction-tuned chat model used as an LLM judge.)* The rubric forces the judge to score fixed dimensions rather than give a vague overall impression, and the `reason` field makes the score auditable so you can spot when the judge itself is miscalibrated.
+
+## Before and After
+
+**Before (a vague judge prompt):**
+
+```text
+Is this a good customer support reply? Rate it out of 10.
+
+Question: "How do I reset my password?"
+Reply: "Click 'Forgot password' on the login page and follow the emailed link.
+Let me know if you need anything else!"
+```
+
+What goes wrong: "good" is undefined, so the judge invents its own criteria and
+a different set on every call. Scores are not reproducible, and because the
+scale has no anchors, an 8 from one run is not comparable to an 8 from another.
+There is no justification, so you cannot tell whether the judge penalized a real
+gap or simply preferred longer answers, which is a well-documented judge bias.
+Worst of all, a single number averages away the dimension you actually care
+about: this reply might be perfectly accurate but incomplete, and 8/10 hides
+that completely.
+
+**After (anchored rubric, per-dimension scores, reason first):**
+
+```text
+You are grading a customer-support reply against a rubric. Score each
+criterion on the 1-5 scale defined below. Be strict: 5 means nothing could
+reasonably be improved.
+
+accuracy     1 = factually wrong  3 = partly correct  5 = fully correct and on-topic
+tone         1 = rude or robotic  3 = neutral         5 = polite and professional
+completeness 1 = ignores the ask  3 = partial answer  5 = fully resolves the question
+
+Judge only against the rubric. Do not reward length, formatting, or
+enthusiasm. Write the reason BEFORE the scores.
+
+Return JSON with keys "reason" (string), then "accuracy", "tone",
+"completeness" (integers 1-5).
+
+Question: "How do I reset my password?"
+Reply to grade: "Click 'Forgot password' on the login page and follow the
+emailed link. Let me know if you need anything else!"
+```
+
+Why it is better: each criterion has a named scale with anchored endpoints and a
+midpoint, so scores mean the same thing across runs and across graders. Scoring
+three dimensions separately surfaces that completeness is the weak axis rather
+than burying it in an average. The explicit instruction not to reward length
+targets a known judge bias head on. Putting `reason` first in the JSON matters
+more than it looks: the judge writes its justification before committing to
+numbers, which is [chain-of-thought](../03-chain-of-thought/README.md) applied
+to grading, and it also gives you an audit trail for spotting a miscalibrated
+judge. The structured output means results go straight into a table you can
+track per release.
+
+**Calibration is not optional.** Before trusting this at scale, have a human
+grade 50 of the same items and check the agreement. If the judge and the human
+diverge systematically, fix the rubric rather than the humans.
 
 ## Best Practices
 
