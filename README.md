@@ -1,5 +1,14 @@
 # Prompt Engineering Handbook
 
+| | |
+|---|---|
+| **What it is** | A working reference for ten prompt engineering techniques, written as a handbook |
+| **Format** | Ten numbered folders, each following the same eight-section template |
+| **Run it** | Nothing to run; it is documentation. CI validates the structure of every page |
+| **Read first** | `01-zero-shot/`, then `03-chain-of-thought/`, then `10-evaluation/` |
+
+**Why it exists:** most prompt engineering advice is either a one-line tip with no context or a paper with no practical guidance, and neither helps when a prompt is returning the wrong thing. Every technique here gets the same treatment: what it is, when it helps, when it does not, a before-and-after, and the failure modes. The limitations section is explicit that nothing here is a benchmark.
+
 A working reference for ten prompt engineering techniques, written as a handbook rather than as a
 library. This repository exists because most prompt engineering advice is either a one-line tip with
 no context or a research paper with no practical guidance, and neither helps when you are staring at
